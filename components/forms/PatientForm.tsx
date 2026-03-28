@@ -37,13 +37,17 @@ export const PatientForm = () => {
         phone: values.phone,
       };
 
+      console.log("Submitting user:", user);           // 👈 add this
       const newUser = await createUser(user);
+      console.log("createUser response:", newUser);    // 👈 add this
 
       if (newUser) {
         router.push(`/patients/${newUser.$id}/register`);
+      } else {
+        console.error("createUser returned null/undefined"); // 👈 add this
       }
     } catch (error) {
-      console.log(error);
+      console.error("Error in onSubmit:", error);      // 👈 change console.log to console.error
     }
 
     setIsLoading(false);
