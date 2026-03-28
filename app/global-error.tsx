@@ -1,17 +1,18 @@
 "use client";
 
-export default function GlobalError({
-  error,
-}: {
-  error: Error;
-}) {
-  console.error("Global Error:", error);
+import * as Sentry from "@sentry/nextjs";
+import { useEffect } from "react";
+
+export default function GlobalError({ error }: { error: Error }) {
+  useEffect(() => {
+    Sentry.captureException(error);
+  }, [error]);
 
   return (
     <html>
       <body>
         <h2>Something went wrong!</h2>
-        <p>Please try again later.</p>
+        <p>Our team has been notified.</p>
       </body>
     </html>
   );

@@ -32,38 +32,69 @@ export const PasskeyModal = () => {
       ? window.localStorage.getItem("accessKey")
       : null;
 
-  useEffect(() => {
-    const accessKey = encryptedKey && decryptKey(encryptedKey);
+  // useEffect(() => {
+  //   const accessKey = encryptedKey && decryptKey(encryptedKey);
 
-    if (path)
-      if (accessKey === process.env.NEXT_PUBLIC_ADMIN_PASSKEY!.toString()) {
-        setOpen(false);
-        router.push("/admin");
-      } else {
-        setOpen(true);
-      }
-  }, [encryptedKey]);
+  //   if (path)
+  //     if (accessKey === process.env.NEXT_PUBLIC_ADMIN_PASSKEY!.toString()) {
+  //       setOpen(false);
+  //       router.push("/admin");
+  //     } else {
+  //       setOpen(true);
+  //     }
+  // }, [encryptedKey]);
+
+  useEffect(() => {
+    if (path) {
+      setOpen(true);
+    }
+  }, [path]);
 
   const closeModal = () => {
     setOpen(false);
     router.push("/");
   };
 
-  const validatePasskey = (
+  // const validatePasskey = (
+  //   e: React.MouseEvent<HTMLButtonElement, MouseEvent>
+  // ) => {
+  //   e.preventDefault();
+
+  //   if (passkey === process.env.NEXT_PUBLIC_ADMIN_PASSKEY) {
+  //     const encryptedKey = encryptKey(passkey);
+
+  //     localStorage.setItem("accessKey", encryptedKey);
+
+  //     setOpen(false);
+  //   } else {
+  //     setError("Invalid passkey. Please try again.");
+  //   }
+  // };
+
+  const validatePasskey = async (
     e: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ) => {
     e.preventDefault();
 
-    if (passkey === process.env.NEXT_PUBLIC_ADMIN_PASSKEY) {
-      const encryptedKey = encryptKey(passkey);
+    try {
+      const res = await fetch("/api/admin-auth", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ passkey }),
+      });
 
-      localStorage.setItem("accessKey", encryptedKey);
-
-      setOpen(false);
-    } else {
-      setError("Invalid passkey. Please try again.");
+      if (res.ok) {
+        router.push("/admin");
+      } else {
+        setError("Invalid passkey. Please try again.");
+      }
+    } catch (err) {
+      setError("Something went wrong. Try again.");
     }
   };
+
 
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>

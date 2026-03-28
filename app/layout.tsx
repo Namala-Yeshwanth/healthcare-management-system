@@ -3,6 +3,7 @@ import "./globals.css";
 import { Plus_Jakarta_Sans as FontSans } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 
+import * as Sentry from "@sentry/nextjs";
 import { cn } from "@/lib/utils";
 
 const fontSans = FontSans({
@@ -11,7 +12,8 @@ const fontSans = FontSans({
   variable: "--font-sans",
 });
 
-export const metadata: Metadata = {
+// 🔹 Base metadata
+const baseMetadata: Metadata = {
   title: "CarePulse",
   description:
     "A healthcare patient management System designed to streamline patient registration, appointment scheduling, and medical records management for healthcare providers.",
@@ -20,13 +22,27 @@ export const metadata: Metadata = {
   },
 };
 
+// 🔹 Exported metadata (static fallback)
+export function generateMetadata(): Metadata {
+  return {
+    ...baseMetadata,
+    other: {
+      ...(baseMetadata.other || {}),
+      ...(Sentry.getTraceData() as Record<
+        string,
+        string | number | (string | number)[]
+      >),
+    },
+  };
+}
+
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={cn(
           "min-h-screen bg-dark-300 font-sans antialiased",
