@@ -5,7 +5,6 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Dispatch, SetStateAction, useState } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 
 import { SelectItem } from "@/components/ui/select";
 import { Doctors } from "@/constants";
@@ -40,25 +39,24 @@ export const AppointmentForm = ({
 
   const AppointmentFormValidation = getAppointmentSchema(type);
 
-  const form = useForm<z.infer<typeof AppointmentFormValidation>>({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const form = useForm<any>({
     resolver: zodResolver(AppointmentFormValidation),
     defaultValues: {
-      primaryPhysician: appointment ? appointment?.primaryPhysician : "",
+      primaryPhysician: appointment?.primaryPhysician ?? "",
       schedule: appointment
-        ? new Date(appointment?.schedule!)
+        ? new Date(appointment.schedule)
         : new Date(Date.now()),
-      reason: appointment ? appointment.reason : "",
-      note: appointment?.note || "",
-      cancellationReason: appointment?.cancellationReason || "",
+      reason: appointment?.reason ?? "",
+      note: appointment?.note ?? "",
+      cancellationReason: appointment?.cancellationReason ?? "",
     },
   });
 
-  const onSubmit = async (
-    values: z.infer<typeof AppointmentFormValidation>
-  ) => {
+  const onSubmit = async (values: any) => {
     setIsLoading(true);
 
-    let status;
+    let status: Status;
     switch (type) {
       case "schedule":
         status = "scheduled";
@@ -72,17 +70,17 @@ export const AppointmentForm = ({
 
     try {
       if (type === "create" && patientId) {
-        const appointment = {
+        const newAppointmentData = {
           userId,
           patient: patientId,
           primaryPhysician: values.primaryPhysician,
           schedule: new Date(values.schedule),
-          reason: values.reason!,
-          status: status as Status,
+          reason: values.reason,
+          status,
           note: values.note,
         };
 
-        const newAppointment = await createAppointment(appointment);
+        const newAppointment = await createAppointment(newAppointmentData);
 
         if (newAppointment) {
           form.reset();
@@ -97,7 +95,7 @@ export const AppointmentForm = ({
           appointment: {
             primaryPhysician: values.primaryPhysician,
             schedule: new Date(values.schedule),
-            status: status as Status,
+            status,
             cancellationReason: values.cancellationReason,
           },
           type,
@@ -114,10 +112,11 @@ export const AppointmentForm = ({
     } catch (error) {
       console.log(error);
     }
+
     setIsLoading(false);
   };
 
-  let buttonLabel;
+  let buttonLabel: string;
   switch (type) {
     case "cancel":
       buttonLabel = "Cancel Appointment";
@@ -126,7 +125,7 @@ export const AppointmentForm = ({
       buttonLabel = "Schedule Appointment";
       break;
     default:
-      buttonLabel = "Submit Apppointment";
+      buttonLabel = "Submit Appointment";
   }
 
   return (
@@ -176,14 +175,14 @@ export const AppointmentForm = ({
             />
 
             <div
-              className={`flex flex-col gap-6  ${type === "create" && "xl:flex-row"}`}
+              className={`flex flex-col gap-6 ${type === "create" && "xl:flex-row"}`}
             >
               <CustomFormField
                 fieldType={FormFieldType.TEXTAREA}
                 control={form.control}
                 name="reason"
                 label="Appointment reason"
-                placeholder="Annual montly check-up"
+                placeholder="Annual monthly check-up"
                 disabled={type === "schedule"}
               />
 
