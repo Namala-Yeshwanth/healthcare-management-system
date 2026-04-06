@@ -95,6 +95,7 @@ export const sendSMSNotification = async (
     return parseStringify(message);
   } catch (error) {
     console.error("An error occurred while sending sms:", error);
+    // Don't throw here - SMS failure shouldn't block appointment scheduling, but we should log it for debugging and monitoring purposes
   }
 };
 
@@ -114,7 +115,7 @@ export const updateAppointment = async ({
       appointment
     );
 
-    if (!updatedAppointment) throw Error;
+    if (!updatedAppointment) throw new Error("Failed to update appointment");
 
     // ✅ SAFE TIMEZONE FALLBACK
     const tz =
@@ -140,6 +141,7 @@ export const updateAppointment = async ({
     return parseStringify(updatedAppointment);
   } catch (error) {
     console.error("An error occurred while scheduling an appointment:", error);
+    throw error; // Rethrow the error to be handled by the caller, e.g. to show an error message in the UI
   }
 };
 

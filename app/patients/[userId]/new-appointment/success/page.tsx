@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Doctors } from "@/constants";
@@ -14,14 +15,24 @@ const RequestSuccess = async ({
   params: { userId },
 }: SearchParamProps) => {
   const appointmentId = (searchParams?.appointmentId as string) || "";
+
+  // Fix: guard against missing appointmentId -- happens if user navigates directly to the success page without booking an appointment first
+  if (!appointmentId) {
+    redirect
+  }
+
   const appointment = await getAppointment(appointmentId);
   
+  // Fix: guard against appointment not found
+  if(!appointment) {
+    redirect(`/patients/${userId}/new-appointment`);
+  }
   const doctor = Doctors.find(
     (doctor) => doctor.name === appointment.primaryPhysician
   );
   const user = await getUser(userId);
 
-  Sentry.captureMessage(`User opened appointment success: ${user.name}`);
+  Sentry.captureMessage(`User opened appointment success: ${user?.name ?? userId}`);
 
   return (
     <div className=" flex h-screen max-h-screen px-[5%]">

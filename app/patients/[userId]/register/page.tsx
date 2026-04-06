@@ -8,6 +8,12 @@ import * as Sentry from "@sentry/nextjs";
 
 const Register = async ({ params: { userId } }: SearchParamProps) => {
   const user = await getUser(userId);
+
+  // Fix: if user not found (bad userId or URL), redirect to homepage
+  if(!user) {
+    redirect("/");
+  }
+  
   const patient = await getPatient(userId);
 
   if (patient) redirect(`/patients/${userId}/new-appointment`);

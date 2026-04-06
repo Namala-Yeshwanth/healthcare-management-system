@@ -26,8 +26,14 @@ export const createUser = async (user: CreateUserParams) => {
       user.name
     );
     return parseStringify(newuser);
-  } catch (error: any) {
-    if (error && error?.code === 409) {
+  } catch (error: unknown) {
+    // 409 = user already exists, find and return them instead
+    if (
+      error !== null && 
+      typeof error === "object" &&
+      "code" in error &&
+      (error as { code: number }).code === 409
+    ) {
       // first try finding by email
       const existingUser = await users.list([
         Query.equal("email", [user.email]),
@@ -45,6 +51,7 @@ export const createUser = async (user: CreateUserParams) => {
       return existingUserByPhone.users[0];
     }
     console.error("An error occurred while creating a new user:", error);
+    throw error; //re-throw so the form shows an error instead of silently failing
   }
 };
 
@@ -59,6 +66,7 @@ export const getUser = async (userId: string) => {
       "An error occurred while retrieving the user details:",
       error
     );
+    throw error;
   }
 };
 
@@ -72,7 +80,6 @@ export const registerPatient = async ({
     let file;
     if (identificationDocument) {
       const inputFile =
-        identificationDocument &&
         InputFile.fromBlob(
           identificationDocument?.get("blobFile") as Blob,
           identificationDocument?.get("fileName") as string
@@ -98,6 +105,7 @@ export const registerPatient = async ({
     return parseStringify(newPatient);
   } catch (error) {
     console.error("An error occurred while creating a new patient:", error);
+    throw error;
   }
 };
 
@@ -116,5 +124,6 @@ export const getPatient = async (userId: string) => {
       "An error occurred while retrieving the patient details:",
       error
     );
+    throw error;
   }
 };

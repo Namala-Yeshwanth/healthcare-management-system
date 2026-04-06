@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { redirect } from "next/navigation";
 
 import { AppointmentForm } from "@/components/forms/AppointmentForm";
 import { getPatient } from "@/lib/actions/patient.actions";
@@ -7,6 +8,11 @@ import * as Sentry from '@sentry/nextjs'
 
 const Appointment = async ({ params: { userId } }: SearchParamProps) => {
   const patient = await getPatient(userId);
+
+  // Fix: if patient hasn't registered yet, send them to register first
+  if(!patient) {
+    redirect(`/patients/${userId}/register`);
+  }
 
   Sentry.captureMessage(`User opened new-appointment: ${patient.name}`);
   

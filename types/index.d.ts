@@ -48,10 +48,18 @@ declare type CreateAppointmentParams = {
   note: string | undefined;
 };
 
+// Fix: appointment is Partial because schedule/cancel forms only send changed fields, not the whole appointment object
 declare type UpdateAppointmentParams = {
   appointmentId: string;
   userId: string;
   timeZone?: string;
-  appointment: Appointment;
+  appointment: {
+    primaryPhysician?: string;
+    schedule?: Date;
+    status?: Status;
+    cancellationReason?: string | null;
+    reason?: string;
+    note?: string;
+  };
   type: string;
 };
